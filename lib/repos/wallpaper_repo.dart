@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:firebase_ai/firebase_ai.dart';
-import 'package:firebase_ai_sample/utils.dart';
+import 'package:firebase_ai_sample/utils/logger.dart';
 
 class WallpaperRepo {
   //TODO: add to remote config
@@ -16,6 +16,8 @@ class WallpaperRepo {
     final response = await model.generateContent([
       Content.text("Generate a wallpaper of $prompt"),
     ]);
+
+    showlog("Response : ${response.text}");
 
     showlog("Image bytes : ${response.inlineDataParts.first.bytes}");
 

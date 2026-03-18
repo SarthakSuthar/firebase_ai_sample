@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:firebase_ai/firebase_ai.dart';
-import 'package:firebase_ai_sample/utils.dart';
+import 'package:firebase_ai_sample/utils/logger.dart';
 
 /*
 Sample response 

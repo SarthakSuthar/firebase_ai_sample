@@ -1,5 +1,6 @@
-import 'package:firebase_ai_sample/utils.dart';
+import 'package:firebase_ai_sample/utils/logger.dart';
 import 'package:firebase_ai_sample/view/story_generator_screen.dart';
+import 'package:firebase_ai_sample/view/talk_to_ai_screen.dart';
 import 'package:firebase_ai_sample/view/wallpaper_generator_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -102,6 +103,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       ).withValues(alpha: 0.4),
                       onTap: () {
                         showlog("Talk to AI");
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const TalkToAiScreen(),
+                          ),
+                        );
                       },
                     ),
                   ],
