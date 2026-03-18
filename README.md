@@ -30,7 +30,7 @@ A voice-enabled module that allows you to communicate directly with the LLM mode
 
 To run this project locally, ensure you have Flutter installed and your Firebase project set up with the necessary AI and App Check configurations.
 
-```bash
+<!-- ```bash
 # Clone the repository
 git clone <repository-url>
 
@@ -42,6 +42,6 @@ flutter pub get
 
 # Run the app
 flutter run
-```
+``` -->
 
-*Note: Ensure you have added the required Firebase configuration files (`google-services.json` for Android / `GoogleService-Info.plist` for iOS).*
+<!-- *Note: Ensure you have added the required Firebase configuration files (`google-services.json` for Android / `GoogleService-Info.plist` for iOS).* -->
