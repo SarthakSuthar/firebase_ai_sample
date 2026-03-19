@@ -17,21 +17,27 @@ class TalkToAiScreen extends StatefulWidget {
 
 class _TalkToAiScreenState extends State<TalkToAiScreen>
     with TickerProviderStateMixin {
+  // Core controllers for managing the network, microphone logic, and speaker outputs.
   final LiveApiRepo _liveApiRepo = LiveApiRepo();
   final AudioInput _audioInput = AudioInput();
   final AudioOutput _audioOutput = AudioOutput();
 
+  // Animations handling the breathing effect of the microphone button.
   late AnimationController _pulseController;
   late AnimationController _glowController;
   late Animation<double> _pulseAnimation;
   late Animation<double> _glowAnimation;
 
+  // Tracking API connection state locally.
   LiveApiStatus _status = LiveApiStatus.disconnected;
+
+  // Managing event listeners dynamically.
   StreamSubscription? _audioInputSub;
   StreamSubscription? _audioResponseSub;
   StreamSubscription? _statusSub;
   StreamSubscription? _turnCompleteSub;
 
+  // UI state toggles
   bool _recording = false;
   bool _loading = false;
   bool _sessionOpened = false;
@@ -56,16 +62,19 @@ class _TalkToAiScreenState extends State<TalkToAiScreen>
       CurvedAnimation(parent: _glowController, curve: Curves.easeInOut),
     );
 
+    // Bind UI rebuilds securely to real-time status updates broadcasted by the Gemini repo.
     _statusSub = _liveApiRepo.statusStream.listen((status) {
       if (mounted) {
         setState(() => _status = status);
       }
     });
 
+    // Pipe raw audio packets returning from the AI directly into an output memory buffer.
     _audioResponseSub = _liveApiRepo.audioResponseStream.listen((audioBytes) {
       _audioOutput.addDataToAudioStream(audioBytes);
     });
 
+    // Play all the buffered audio packets locally through speakers once the AI wraps its utterance.
     _turnCompleteSub = _liveApiRepo.turnCompleteStream.listen((_) {
       _audioOutput.playBufferedAudio();
     });
@@ -89,15 +98,18 @@ class _TalkToAiScreenState extends State<TalkToAiScreen>
   }
 
   // -- Session setup (connect/disconnect toggle) --
+  /// Connects or disconnects the websocket-backed Live API instance and requests required OS-level permissions.
   Future<void> _setupSession() async {
     setState(() => _loading = true);
 
+    // Warm up the speaker module initially.
     try {
       await _audioOutput.init();
     } catch (e) {
       showlog('Audio Output init error: $e');
     }
 
+    // Attempt to acquire or ask for microphone permissions cleanly before doing anything else.
     try {
       await _audioInput.init(); // This directly requests microphone permissions
     } catch (e) {
@@ -106,6 +118,7 @@ class _TalkToAiScreenState extends State<TalkToAiScreen>
       return;
     }
 
+    // Toggle logic: If not connected, launch the connection routine.
     if (!_sessionOpened) {
       try {
         await _liveApiRepo.connect();
@@ -115,6 +128,7 @@ class _TalkToAiScreenState extends State<TalkToAiScreen>
         _showError('Connection failed: $e');
       }
     } else {
+      // If already connected, gracefully close any ongoing recordings to avoid leaking streams, then disconnect.
       if (_recording) await _stopRecording();
       await _liveApiRepo.disconnect();
       _sessionOpened = false;
@@ -124,7 +138,9 @@ class _TalkToAiScreenState extends State<TalkToAiScreen>
   }
 
   // -- Recording controls --
+  /// Activates the microphone using audio_utils handlers, starting a packet data stream pipeline towards the backend.
   Future<void> _startRecording() async {
+    // Only permit streaming to Gemini if network is effectively established.
     if (!_sessionOpened) return;
 
     await _audioInputSub?.cancel();
@@ -132,9 +148,11 @@ class _TalkToAiScreenState extends State<TalkToAiScreen>
     setState(() => _recording = true);
 
     try {
+      // Create a fresh stream interceptor directly connected to device hardware.
       final inputStream = await _audioInput.startRecordingStream();
 
       if (inputStream != null) {
+        // Feed every single byte emitted locally straight into the cloud websocket connection payload.
         _audioInputSub = inputStream.listen(
           (data) => _liveApiRepo.sendAudio(data),
           onError: (e) {
@@ -145,6 +163,7 @@ class _TalkToAiScreenState extends State<TalkToAiScreen>
         );
       }
 
+      // Initiate glowing CSS-like visual animations to show listening state visually.
       _pulseController.repeat(reverse: true);
       _glowController.repeat(reverse: true);
     } catch (e) {

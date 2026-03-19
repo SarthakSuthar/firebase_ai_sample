@@ -5,11 +5,16 @@ import 'package:just_audio/just_audio.dart';
 import 'package:firebase_ai_sample/utils/logger.dart';
 import 'package:path_provider/path_provider.dart';
 
+/// Handles the playback of streaming audio responses from the AI.
+/// It buffers PCM audio chunks and plays them back smoothly using a temporary WAV file.
 class AudioOutput {
   bool initialized = false;
   final AudioPlayer _player = AudioPlayer();
+
+  // A temporary buffer holding raw PCM audio chunks before they are packaged into a playable format.
   final List<int> _audioBuffer = [];
 
+  // Expected audio parameters defined by the Gemini Live API.
   final int sampleRate = 24000;
   final int channels = 1;
   final int bitsPerSample = 16;
@@ -28,25 +33,33 @@ class AudioOutput {
   }
 
   // Called when recording starts (or when session is setup)
+  /// Clears any leftover audio in the buffer.
   Future<void> playStream() async {
     _audioBuffer.clear();
     await stopStream();
   }
 
+  /// Appends newly arrived chunk of raw PCM bytes from the API into our memory buffer.
   void addDataToAudioStream(Uint8List audioChunk) {
     _audioBuffer.addAll(audioChunk);
   }
 
+  /// Stops any currently playing audio track.
   Future<void> stopStream() async {
     await _player.stop();
   }
 
+  /// Compiles all buffered PCM data into a WAV file and uses [AudioPlayer] to play it.
+  /// Typically called sequentially after the AI completes a turn to ensure continuous output.
   Future<void> playBufferedAudio() async {
     if (_audioBuffer.isEmpty) return;
 
+    // Retrieve and immediately clear the incoming buffer to process new chunks
     final pcmBytes = Uint8List.fromList(_audioBuffer);
     _audioBuffer.clear();
 
+    // The just_audio plugin (and most native players) expect standard audio formats like WAV.
+    // So we manually add a WAV Header to the raw PCM data.
     final wavBytes = _createWavFromPcm(
       pcmBytes,
       sampleRate,
@@ -56,26 +69,32 @@ class AudioOutput {
 
     File? tempFile;
     try {
+      // Create a unique temporary file to dump the WAV bytes locally.
       final dir = await getTemporaryDirectory();
       tempFile = File(
         '${dir.path}/ai_audio_${DateTime.now().millisecondsSinceEpoch}.wav',
       );
       await tempFile.writeAsBytes(wavBytes, flush: true);
 
+      // Tell the audio player to consume and play the generated temporary WAV file.
       await _player.setFilePath(tempFile.path);
       await _player.play();
       showlog('AudioOutput: Playing ${wavBytes.length} bytes of WAV audio');
 
+      // Wait until playback successfully finishes.
       await _player.playerStateStream.firstWhere(
         (state) => state.processingState == ProcessingState.completed,
       );
     } catch (e) {
       showlog('AudioOutput: playback error $e');
     } finally {
+      // Clean up the temporary file from storage after playback or failure.
       await tempFile?.delete(); // Always clean up temp file
     }
   }
 
+  /// Utility function to wrap Raw PCM audio data into a standard WAV format
+  /// by prepping and appending a valid RIFF header on top of the bytes.
   Uint8List _createWavFromPcm(
     Uint8List pcmData,
     int sampleRate,
@@ -121,23 +140,5 @@ class AudioOutput {
     wavBytes.setRange(44, 44 + dataSize, pcmData);
 
     return wavBytes;
-  }
-}
-
-class _WavAudioSource extends StreamAudioSource {
-  final Uint8List _wavBytes;
-  _WavAudioSource(this._wavBytes);
-
-  @override
-  Future<StreamAudioResponse> request([int? start, int? end]) async {
-    start ??= 0;
-    end ??= _wavBytes.length;
-    return StreamAudioResponse(
-      sourceLength: _wavBytes.length,
-      contentLength: end - start,
-      offset: start,
-      stream: Stream.value(_wavBytes.sublist(start, end)),
-      contentType: 'audio/wav',
-    );
   }
 }

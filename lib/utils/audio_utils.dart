@@ -4,18 +4,24 @@ import 'package:permission_handler/permission_handler.dart';
 import 'dart:async';
 import 'package:waveform_flutter/waveform_flutter.dart' as wf;
 
+/// Handles recording user voice input securely and streaming real-time PCM bytes.
+/// Extends [ChangeNotifier] so UI components can reactively update when recording state changes.
 class AudioInput extends ChangeNotifier {
+  // Underlying plugin responsible for capturing audio streams securely from the device.
   AudioRecorder _recorder = AudioRecorder();
+  // Configured to 16-bit PCM standard to match the Gemini API requirements.
   final AudioEncoder _encoder = AudioEncoder.pcm16bits;
 
   bool isRecording = false;
   bool isPaused = false;
 
+  // Manages mapping the raw hardware stream packets into an accessible [Uint8List] stream.
   StreamController<Uint8List>? _audioDataController;
   StreamSubscription? _recorderStreamSub;
 
   Stream<Uint8List>? get audioStream => _audioDataController?.stream;
 
+  // Manages tracking and dispatching volume bounds (amplitude) for visualizers.
   Stream<wf.Amplitude>? amplitudeStream;
   StreamSubscription? _amplitudeSubscription;
   StreamController<wf.Amplitude>? _amplitudeStreamController;
@@ -40,7 +46,9 @@ class AudioInput extends ChangeNotifier {
     }
   }
 
+  /// Initiates microphone capture and provides a live stream of recorded PCM bytes.
   Future<Stream<Uint8List>?> startRecordingStream() async {
+    // 1. Clean up any existing active streams before instantiating new ones.
     await _amplitudeSubscription?.cancel();
     if (_amplitudeStreamController != null &&
         !_amplitudeStreamController!.isClosed) {
@@ -54,8 +62,9 @@ class AudioInput extends ChangeNotifier {
 
     _audioDataController = StreamController<Uint8List>();
 
-    // Re-instantiate the recorder to ensure we get a fresh stream.
-    // This fixes "Stream has already been listened to" errors when restarting recording.
+    // 2. Clear out the previous recording instance.
+    // Re-instantiating the recorder guarantees we get a freshly isolated physical stream
+    // and fixes frequent "Stream has already been listened to" exceptions.
     try {
       if (await _recorder.isRecording()) {
         await _recorder.stop();
@@ -92,6 +101,8 @@ class AudioInput extends ChangeNotifier {
       debugPrint('Error selecting device: $e');
     }
 
+    // Configures the core recording params to match the exact specs the Gemini API expects
+    // e.g. 24Khz standard mono stream while heavily suppressing surrounding background noise.
     var recordConfig = RecordConfig(
       encoder: _encoder,
       sampleRate: 24000,
@@ -105,14 +116,15 @@ class AudioInput extends ChangeNotifier {
       iosConfig: const IosRecordConfig(categoryOptions: []),
     );
 
+    // Request the platform plugin to start delivering hardware bytes.
     final rawStream = await _recorder.startStream(recordConfig);
 
+    // Manually push each captured hardware packet downstream to our own controllers
     _recorderStreamSub = rawStream.listen(
       (data) {
         if (data.isNotEmpty &&
             _audioDataController != null &&
             !_audioDataController!.isClosed) {
-          // debugPrint('AudioInput: received ${data.length} bytes');
           _audioDataController!.add(data);
         }
       },
