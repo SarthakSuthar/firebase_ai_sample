@@ -1,4 +1,4 @@
-import 'package:firebase_ai_sample/utils/logger.dart';
+import 'package:firebase_ai_sample/view/chat_screen.dart';
 import 'package:firebase_ai_sample/view/story_generator_screen.dart';
 import 'package:firebase_ai_sample/view/talk_to_ai_screen.dart';
 import 'package:firebase_ai_sample/view/wallpaper_generator_screen.dart';
@@ -53,7 +53,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         0xFFFC6076,
                       ).withValues(alpha: 0.4),
                       onTap: () {
-                        showlog("Story Generator");
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -71,7 +70,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         0xFF4FACFE,
                       ).withValues(alpha: 0.4),
                       onTap: () {
-                        showlog("Chat");
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ChatScreen(),
+                          ),
+                        );
                       },
                     ),
                     GridCard(
@@ -90,7 +94,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                 const WallpaperGeneratorScreen(),
                           ),
                         );
-                        showlog("Wallpaper Generator");
                       },
                     ),
                     GridCard(
@@ -102,7 +105,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         0xFF9881CD,
                       ).withValues(alpha: 0.4),
                       onTap: () {
-                        showlog("Talk to AI");
                         Navigator.push(
                           context,
                           MaterialPageRoute(
