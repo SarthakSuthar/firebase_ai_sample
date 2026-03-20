@@ -37,7 +37,4 @@ A voice-enabled module that allows you to communicate directly with the LLM mode
 - **AI Integration:** Firebase AI Kit
 - **Language:** Dart
 
-## 🚀 Getting Started
-
-To run this project locally, ensure you have Flutter installed and your Firebase project set up with the necessary AI and App Check configurations.
 
