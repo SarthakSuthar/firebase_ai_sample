@@ -2,6 +2,17 @@
 
 A Flutter application showcasing the power of the **Firebase AI Kit** by integrating various generative AI capabilities into a single, cohesive user experience. 
 
+## Screenshots
+
+<div align="center">
+  <img src="assets/screenshots/Screenshot_1774012960.png" width="18%" />
+  <img src="assets/screenshots/Screenshot_1774012964.png" width="18%" />
+  <img src="assets/screenshots/Screenshot_1774012970.png" width="18%" />
+  <img src="assets/screenshots/Screenshot_1774012974.png" width="18%" />
+  <img src="assets/screenshots/Screenshot_1774012977.png" width="18%" />
+</div>
+
+
 ## 🌟 Features
 
 This project demonstrates 4 distinct AI modules, each tailored for a specific use case:
@@ -30,18 +41,3 @@ A voice-enabled module that allows you to communicate directly with the LLM mode
 
 To run this project locally, ensure you have Flutter installed and your Firebase project set up with the necessary AI and App Check configurations.
 
-<!-- ```bash
-# Clone the repository
-git clone <repository-url>
-
-# Navigate to the project directory
-cd firebase_ai_sample
-
-# Install dependencies
-flutter pub get
-
-# Run the app
-flutter run
-``` -->
-
-<!-- *Note: Ensure you have added the required Firebase configuration files (`google-services.json` for Android / `GoogleService-Info.plist` for iOS).* -->
