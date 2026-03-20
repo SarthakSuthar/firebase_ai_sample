@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Firebase Ai Sample',
+      title: 'Firebase AI',
       theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.blueAccent)),
       home: const HomeScreen(),
     );
