@@ -1,4 +1,8 @@
 ---
+trigger: always_on
+---
+
+---
 name: Industry Standard Coding Patterns & Optimization
 description: Instructs the agent to follow industry-standard coding patterns, write performance-optimized code, and always provide clear explanations of what the code does.
 ---
@@ -44,27 +48,7 @@ When writing or modifying code, you **MUST** follow all of the rules below. Ever
 
 ### 2.1 Separation of Concerns
 - **UI Layer**: Only handles rendering and user interaction. No business logic in widgets.
-- **BLoC/Cubit Layer**: Contains all business logic. Receives events/calls, processes them, and emits states.
-- **Repository Layer**: Abstracts the data source. The BLoC should never know whether data comes from an API, local DB, or cache.
-- **Data Layer (Services/Data Sources)**: Handles raw API calls, database queries, and local storage operations.
-
-### 2.2 Dependency Injection
-- Use **constructor injection** for all dependencies (e.g., repositories into BLoCs, services into repositories).
-- Register dependencies via `GetIt` or equivalent service locator, configured in a central `injection.dart` file.
-- Prefer **interfaces/abstract classes** for dependencies to enable testability and loose coupling.
-
-### 2.3 State Management (BLoC Pattern)
-- Define **granular, descriptive events** — avoid generic events like `LoadData`. Use `FetchUserProfile`, `SubmitRegistrationForm`, etc.
-- Define **clear, immutable states** using `Equatable` for efficient state comparison.
-- Use `sealed class` or `freezed` for states/events where appropriate for exhaustive pattern matching.
-- Never call `add()` on a closed BLoC — always guard with `isClosed` check when adding events asynchronously.
-- Use `transformEvents` or `debounce`/`throttle` for search or rapid-fire events.
-
-### 2.4 Model & Data Classes
-- Models should be **immutable** — use `final` fields and `const` constructors.
-- Implement `fromJson` / `toJson` for serialization. Use `json_serializable` or manual factories.
-- Use `copyWith` methods for creating modified copies of immutable objects.
-- Implement `Equatable` or override `==` and `hashCode` for value equality.
+- **Repository Layer**: Handles API calls
 
 ---
 
@@ -133,30 +117,6 @@ Use this pattern when explaining code:
 ```
 
 > **Important:** Do NOT provide code without explanation. Even for small fixes, briefly describe what changed and why.
-
----
-
-## 5. Code Review Checklist
-
-Before finalizing any code, mentally verify:
-
-- [ ] Follows **single responsibility** — each function/class does one thing
-- [ ] **No duplicated code** — common logic is extracted
-- [ ] **Proper null safety** — no force-unwrapping without validation
-- [ ] **Error states handled** — UI shows errors gracefully, BLoC emits failure states
-- [ ] **Performance optimized** — const constructors, buildWhen, lazy loading, pagination
-- [ ] **Resources cleaned up** — controllers, subscriptions, and streams disposed
-- [ ] **Naming is clear and descriptive** — no ambiguous abbreviations
-- [ ] **Code is explained** — purpose, logic, and decisions are documented
-
----
-
-## 6. File & Project Structure
-
-- Group files by **feature** (e.g., `login/`, `profile/`, `jobs/`), not by type.
-- Within each feature, maintain sub-folders: `bloc/`, `models/`, `screens/`, `widgets/`, `repository/`.
-- Keep shared/reusable code in top-level folders: `widgets/`, `services/`, `utils/`, `theme/`.
-- One class per file. File name must match the primary class name in `snake_case`.
 
 ---
 
