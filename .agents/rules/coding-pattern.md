@@ -40,7 +40,7 @@ When writing or modifying code, you **MUST** follow all of the rules below. Ever
 - Never silently swallow exceptions. At minimum, log them.
 - Use **specific exception types** instead of catching generic `Exception` or `Object`.
 - Provide **meaningful error messages** that help in debugging.
-- In BLoC/Cubit, always emit a proper error/failure state with a user-friendly message.
+- In BLoC, always emit a proper error/failure state with a user-friendly message.
 
 ---
 
